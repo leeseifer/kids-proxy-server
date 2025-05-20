@@ -1,0 +1,37 @@
+<h3>Internet Voucher Portal</h3>
+<label>User <input id="u"></label><br><br>
+
+<label>Add voucher <input id="v"></label>
+<button onclick="redeem()">Redeem</button><br><br>
+
+<button onclick="start()">▶️ Start / Resume</button>
+<button onclick="pause()">⏸️ Pause</button><br><br>
+
+<p><b>Time left:</b> <span id="left">--:--</span></p>
+<p id="msg"></p>
+
+<script>
+let timer;
+function call(path,body){ return fetch(path,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(Object.assign({user:u.value},body))
+    }).then(r=>r.text()); }
+
+function redeem(){ call('/start',{voucher:v.value}).then(show); }
+
+function start(){ call('/start',{}).then(show); }
+
+function pause(){ call('/pause',{}).then(show); }
+
+function poll(){
+  fetch(`/balance?user=${u.value}`).then(r=>r.json()).then(data=>{
+    const m=Math.floor(data.seconds/60).toString().padStart(2,'0');
+    const s=Math.floor(data.seconds%60).toString().padStart(2,'0');
+    left.textContent=`${m}:${s} (${data.state})`;
+  });
+}
+function show(msg){ document.getElementById('msg').textContent=msg; poll(); }
+
+timer=setInterval(poll,5000);  // update every 5 s
+</script>
+

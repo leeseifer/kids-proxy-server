@@ -1,0 +1,7 @@
+http://127.0.0.1:8080/check?user=$user#!/bin/bash
+# Expects: "<username> ..."
+while read user _; do
+  if curl -fsS --max-time 2 "http://127.0.0.1:8080/check?user=$user" | grep -q '^OK$'
+  then echo "OK"; else echo "ERR"; fi
+done
+

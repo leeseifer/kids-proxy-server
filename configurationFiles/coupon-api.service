@@ -1,0 +1,20 @@
+# /etc/systemd/system/coupon-api.service
+[Unit]
+Description=Coupon API (Node.js)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/coupon
+ExecStart=/usr/bin/node /opt/coupon/server.js
+Restart=on-failure
+RestartSec=3
+
+# replace pi with the exact login name that owns /opt/coupon
+User=leeseifer
+
+# uncomment the next line only if server.js reads process.env.PORT
+# Environment=PORT=8383
+
+[Install]
+WantedBy=multi-user.target
+

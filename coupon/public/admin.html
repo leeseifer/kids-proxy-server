@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>Coupon Admin</title>
+<style>
+ body {font-family:sans-serif;max-width:480px;margin:2rem auto;}
+ select, input, button {margin:.4rem 0;padding:.3rem .6rem;}
+ hr {margin:1.5rem 0;}
+</style>
+
+<h2>🛠️ Coupon Admin Panel</h2>
+
+<!-- Single voucher (old feature) -->
+<h3>Create ONE Voucher</h3>
+<input id="ap" type="password" placeholder="admin password"><br>
+<label>User
+  <select id="user">
+    <option>nguyen</option><option>han</option>
+  </select></label><br>
+<label>Minutes
+  <select id="mins">
+    <option>15</option><option>30</option><option>45</option><option>60</option>
+  </select></label><br>
+<button onclick="makeOne()">Generate</button>
+<pre id="out"></pre>
+
+<hr>
+
+<!-- NEW bulk section -->
+<h3>Bulk PDF of Vouchers</h3>
+<label>User
+  <select id="bulkUser">
+    <option>nguyen</option><option>han</option>
+  </select></label><br>
+<label>Minutes / voucher
+  <select id="bulkMins">
+    <option>15</option><option>30</option><option>45</option><option>60</option>
+  </select></label><br>
+<label>How many?
+  <input id="bulkCount" type="number" value="48" min="1" max="240" style="width:6rem">
+</label><br>
+<button onclick="printMany()">Create PDF & Download</button>
+<pre id="bulkOut"></pre>
+
+<script>
+async function makeOne(){
+  const r = await fetch('/admin/newVoucher',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({adminPass:ap.value,
+                         user:user.value,
+                         minutes:+mins.value})
+  });
+  out.textContent = await r.text();   // shows {code:"ABC123"}
+}
+
+/* NEW bulk generator */
+async function printMany(){
+  bulkOut.textContent='Generating…';
+  const body = {adminPass:ap.value,
+                user:bulkUser.value,
+                minutes:+bulkMins.value,
+                count:+bulkCount.value};
+  const r = await fetch('/admin/printVouchers',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){ bulkOut.textContent='Error '+r.status; return; }
+
+  /* Stream PDF blob and auto-download */
+  const blob = await r.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download='vouchers.pdf'; a.click();
+  URL.revokeObjectURL(url);
+  bulkOut.textContent='PDF downloaded 📄';
+}
+</script>
+
