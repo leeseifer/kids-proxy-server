@@ -30,14 +30,13 @@ sudo apt update
 sudo apt install squid nodejs npm sqlite3 apache2-utils git -y
 
 # 3‑2  Clone project
-cd /opt && sudo git clone https://github.com/<you>/kid-coupon-proxy.git coupon
+cd /opt && sudo git clone https://github.com/<you>/kids-proxy-server.git coupon
 sudo chown -R $USER:$USER coupon && cd coupon
 
 # 3‑3  Node deps & DB
 npm install                          # pdfkit, bcryptjs, express, better-sqlite3
 sqlite3 coupons.db < db.sql          # tables & seed data
-node tools/addUser.js nguyen kid123  # add kid accounts
-node tools/addUser.js han    kid123
+
 ```
 
 ---
@@ -47,12 +46,12 @@ node tools/addUser.js han    kid123
 1. **Copy helper & set perms**
 
    ```bash
-   sudo cp scripts/coupon_acl /etc/squid/
+   sudo cp configurationFiles/coupon_acl /etc/squid/
    sudo chmod 750 /etc/squid/coupon_acl
    sudo chown proxy:proxy /etc/squid/coupon_acl
    ```
 
-2. \`\`\*\* core snippet\*\*
+2. \`\`\*\* /etc/squid/squid.conf (snippets)t\*\*
 
    ```conf
    http_port 3128                 # forward‑proxy (auth)
@@ -67,7 +66,7 @@ node tools/addUser.js han    kid123
 
    # allow voucher UI even at zero balance
    acl voucher_srv dst 192.168.127.42
-   acl voucher_port port 8383
+   acl voucher_port port 8080
    http_access allow voucher_srv voucher_port
 
    http_access allow kids_users kids_coupon
@@ -114,7 +113,7 @@ Restart=on-failure
 RestartSec=3
 User=pi
 Group=pi
-#Environment=PORT=8383   # if you use process.env.PORT
+#Environment=PORT=8080   # if you use process.env.PORT
 
 [Install]
 WantedBy=multi-user.target
@@ -125,7 +124,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now coupon-api
 ```
 
-Browse to [**http://192.168.127.42:8383/**](http://192.168.127.42:8383/).
+Browse to [**http://192.168.127.42:8080/**](http://192.168.127.42:8080/).
 
 ---
 
@@ -139,7 +138,7 @@ Browse to [**http://192.168.127.42:8383/**](http://192.168.127.42:8383/).
 **Bulk PDF** example (downloads `vouchers.pdf`):
 
 ```bash
-curl -X POST http://192.168.127.42:8383/admin/printVouchers \
+curl -X POST http://192.168.127.42:8080/admin/printVouchers \
  -H "Content-Type: application/json" \
  -d '{"adminPass":"secret","user":"nguyen","minutes":15,"count":48}' \
  --output vouchers.pdf
