@@ -140,7 +140,7 @@ Browse to [**http://192.168.127.42:8080/**](http://192.168.127.42:8080/).
 ```bash
 curl -X POST http://192.168.127.42:8080/admin/printVouchers \
  -H "Content-Type: application/json" \
- -d '{"adminPass":"secret","user":"nguyen","minutes":15,"count":48}' \
+ -d '{"adminPass":"letmein","user":"user1","minutes":15,"count":48}' \
  --output vouchers.pdf
 ```
 
@@ -152,9 +152,11 @@ curl -X POST http://192.168.127.42:8080/admin/printVouchers \
 
 ```bash
 # Squid side
-sudo htpasswd /etc/squid/passwd nguyen
+sudo htpasswd /etc/squid/passwd user1
 # DB side
-node tools/setPass.js nguyen NEWPASS
+curl --location 'http://192.168.127.42:8080/admin/setPassword' \
+--header 'Content-Type: application/json' \
+--data '{"adminPass":"letmein","user":"user2","newPass":"123"}'
 ```
 
 ### Top‑up 15 minutes manually
